@@ -14,11 +14,10 @@ interface DialogPortalProps extends DialogPrimitive.DialogPortalProps {
   className?: string;
 }
 
-const DialogPortal: React.FC<DialogPortalProps> = ({ className, ...props }) => (
+const DialogPortal: React.FC<DialogPortalProps> = ({ className, children, ...props }) => (
   <DialogPrimitive.Portal {...props}>
-    {/* Wrap the portal content with a div to apply className */}
     <div className={cn(className)}>
-      {props.children}
+      {children}
     </div>
   </DialogPrimitive.Portal>
 );
