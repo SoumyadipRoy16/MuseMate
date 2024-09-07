@@ -22,7 +22,7 @@ export default async function createGooglePayUPI(req: NextApiRequest, res: NextA
         const name = "Parthib Mudi";
         const paymentId = `${Date.now()}-${Math.floor(Math.random() * 10000)}`; // Generate a unique payment ID
 
-        const upiString = `upi://pay?pa=${upiID}&pn=${name}&am=1&cu=INR&tn=Payment for Museum Tickets&tr=${paymentId}`;
+        const upiString = `upi://pay?pa=${upiID}&pn=${name}&am=${total}&cu=INR&tn=Payment for Museum Tickets&tr=${paymentId}`;
 
         // Generate QR code
         const qrImage = await QRCode.toDataURL(upiString);
