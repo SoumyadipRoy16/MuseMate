@@ -506,7 +506,7 @@ export default function Component() {
       <p><strong>Time:</strong> ${selectedTime}</p>
       <p><strong>Adults:</strong> Rs.15 * ${adults} = Rs.${15 * adults}</p>
       <p><strong>Students/Seniors:</strong> Rs.10 * ${seniors} = Rs.${10 * seniors}</p>
-      <p><strong>Total:</strong> Rs.1</p>
+      <p><strong>Total:</strong> Rs.${total}</p>
     `;
 
     setBillDetails(billText);
