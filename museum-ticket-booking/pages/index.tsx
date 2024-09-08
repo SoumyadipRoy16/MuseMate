@@ -142,6 +142,31 @@ export default function EnhancedLandingPage() {
     }
   }, [])
 
+  useEffect(() => {
+    // Google Tag Manager Scripts
+    // Create script element for Google Tag Manager
+    const script = document.createElement('script')
+    script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z228CZ7BH0'
+    script.async = true
+    document.head.appendChild(script)
+
+    // Inline script to initialize Google Tag Manager
+    const inlineScript = document.createElement('script')
+    inlineScript.innerHTML = `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-Z228CZ7BH0');
+    `
+    document.head.appendChild(inlineScript)
+
+    // Cleanup function to remove the scripts if component is unmounted
+    return () => {
+      document.head.removeChild(script)
+      document.head.removeChild(inlineScript)
+    }
+  }, [])
+
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-amber-100 to-amber-300 text-amber-900 overflow-hidden">
       <canvas
