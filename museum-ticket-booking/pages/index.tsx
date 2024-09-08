@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
@@ -5,6 +7,8 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { Facebook, Mail } from 'lucide-react'
+import { useAuth0 } from '@auth0/auth0-react'
 import '../app/globals.css'
 
 const changingWords = ["Time", "Culture", "History", "Creativity"]
@@ -13,6 +17,7 @@ export default function EnhancedLandingPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isLoginView, setIsLoginView] = useState(true)
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
+  const { loginWithRedirect, isAuthenticated, logout, user } = useAuth0()
 
   // Form state
   const [formData, setFormData] = useState({
@@ -63,6 +68,14 @@ export default function EnhancedLandingPage() {
     }
   }
 
+  const handleSocialLogin = (provider: string) => {
+    loginWithRedirect({
+      appState: {
+        returnTo: '/chatbot' // Redirect to /chatbot after successful login
+      }
+    });
+  };
+  
   useEffect(() => {
     const wordInterval = setInterval(() => {
       setCurrentWordIndex((prevIndex) => (prevIndex + 1) % changingWords.length)
@@ -78,13 +91,37 @@ export default function EnhancedLandingPage() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+
+    resizeCanvas()
 
     const stripeWidth = 30
     const stripeSpacing = 60
     let currentStripe = 0
     let beamProgress = 0
+
+    const colors = [
+      'rgba(139, 69, 19, 0.5)',
+      'rgba(205, 133, 63, 0.5)',
+      'rgba(210, 180, 140, 0.5)',
+      'rgba(255, 228, 181, 0.5)'
+    ]
+
+    const drawBackground = (time: number) => {
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
+      const colorIndex1 = Math.floor(time / 2000) % colors.length
+      const colorIndex2 = (colorIndex1 + 1) % colors.length
+      const ratio = (time % 2000) / 2000
+
+      gradient.addColorStop(0, colors[colorIndex1])
+      gradient.addColorStop(1, colors[colorIndex2])
+
+      ctx.fillStyle = gradient
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+    }
 
     const drawStripes = () => {
       ctx.save()
@@ -114,8 +151,9 @@ export default function EnhancedLandingPage() {
       ctx.restore()
     }
 
-    const animate = () => {
+    const animate = (time: number) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
+      drawBackground(time)
       drawStripes()
       drawBeam(currentStripe, beamProgress)
 
@@ -128,29 +166,22 @@ export default function EnhancedLandingPage() {
       requestAnimationFrame(animate)
     }
 
-    animate()
+    animate(0)
 
-    const handleResize = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-    }
-
-    window.addEventListener('resize', handleResize)
+    window.addEventListener('resize', resizeCanvas)
 
     return () => {
-      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('resize', resizeCanvas)
     }
   }, [])
 
   useEffect(() => {
     // Google Tag Manager Scripts
-    // Create script element for Google Tag Manager
     const script = document.createElement('script')
     script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z228CZ7BH0'
     script.async = true
     document.head.appendChild(script)
 
-    // Inline script to initialize Google Tag Manager
     const inlineScript = document.createElement('script')
     inlineScript.innerHTML = `
       window.dataLayer = window.dataLayer || [];
@@ -160,7 +191,6 @@ export default function EnhancedLandingPage() {
     `
     document.head.appendChild(inlineScript)
 
-    // Cleanup function to remove the scripts if component is unmounted
     return () => {
       document.head.removeChild(script)
       document.head.removeChild(inlineScript)
@@ -168,7 +198,7 @@ export default function EnhancedLandingPage() {
   }, [])
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-amber-100 to-amber-300 text-amber-900 overflow-hidden">
+    <div className="relative min-h-screen text-amber-900 overflow-hidden">
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
@@ -238,15 +268,12 @@ export default function EnhancedLandingPage() {
                 >
                   <span className="relative z-10">Book A Ticket</span>
                   <span className="absolute inset-0 bg-amber-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  {/* Styling stripes */}
                   <span className="absolute top-0 left-0 w-full h-2 bg-amber-600" />
                   <span className="absolute bottom-0 left-0 w-full h-2 bg-amber-600" />
                   <span className="absolute top-0 left-0 w-2 h-full bg-amber-600" />
                   <span className="absolute top-0 right-0 w-2 h-full bg-amber-600" />
-                  {/* Inner crosshair style */}
                   <span className="absolute top-1/2 left-0 w-full h-[1px] bg-amber-400 opacity-50" />
                   <span className="absolute top-0 left-1/2 w-[1px] h-full bg-amber-400 opacity-50" />
-                  {/* Rounded corners */}
                   <span className="absolute -top-2 -left-2 w-4 h-4 border-t-4 border-l-4 border-amber-600 rounded-tl-full" />
                   <span className="absolute -top-2 -right-2 w-4 h-4 border-t-4 border-r-4 border-amber-600 rounded-tr-full" />
                   <span className="absolute -bottom-2 -left-2 w-4 h-4 border-b-4 border-l-4 border-amber-600 rounded-bl-full" />
@@ -268,9 +295,7 @@ export default function EnhancedLandingPage() {
                         className="relative inline-flex items-center h-6 rounded-full w-11 bg-gray-200"
                       >
                         <span
-                          className={`${
-                            !isLoginView ? 'translate-x-6' : 'translate-x-1'
-                          } inline-block w-4 h-4 transform bg-black rounded-full transition-transform`}
+                          className={`${!isLoginView ? 'translate-x-6' : 'translate-x-1'} inline-block w-4 h-4 transform bg-black rounded-full transition-transform`}
                         />
                       </Switch>
                     </div>
@@ -324,6 +349,27 @@ export default function EnhancedLandingPage() {
                       </motion.div>
                     )}
                   </AnimatePresence>
+                  <div className="space-y-2">
+                    <Button
+                      onClick={() => handleSocialLogin('google-oauth2')}
+                      className="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                    >
+                      <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"
+                        />
+                      </svg>
+                      Continue with Google
+                    </Button>
+                    <Button
+                      onClick={() => handleSocialLogin('facebook')}
+                      className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                    >
+                      <Facebook className="w-5 h-5 mr-2" />
+                      Continue with Facebook
+                    </Button>
+                  </div>
                 </div>
               </DialogContent>
             </Dialog>
