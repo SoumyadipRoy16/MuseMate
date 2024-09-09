@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
+import { useCallback } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { SendIcon, UserIcon, LandmarkIcon, CalendarIcon, ClockIcon, MicIcon, Languages } from 'lucide-react';
 import { sendBookingData } from "@/lib/api";
+import { useRouter } from 'next/router';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import TimePicker from 'react-time-picker';
@@ -179,12 +182,9 @@ export default function Component() {
     const [billDetails, setBillDetails] = useState<string | null>(null);
     const scrollAreaRef = useRef<HTMLDivElement>(null);
     const [selectedLanguage, setSelectedLanguage] = useState<'English' | 'Hindi' | 'Bengali'>('English');
-    const [isListening, setIsListening] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
-    const [hasSpokenWelcome, setHasSpokenWelcome] = useState(false);
     const [isDateTimeMessageShown, setIsDateTimeMessageShown] = useState(false);
-    const [isVisitorsMessageSpoken, setIsVisitorsMessageSpoken] = useState(false);
     const [selectedGallery, setSelectedGallery] = useState<string | null>(null);
     const [showGalleryPicker, setShowGalleryPicker] = useState(false);
     const [hasSpokenTimeSelected, setHasSpokenTimeSelected] = useState(false);
@@ -412,6 +412,16 @@ export default function Component() {
               setShowTimePicker(true); // Show time picker after selecting date
           }, 1000);
       }
+  };
+
+  const { logout } = useAuth0();
+  const router = useRouter();
+  const handleLogout = () => {
+    logout({
+      logoutParams: { returnTo: window.location.origin },
+    });
+    localStorage.removeItem('token');
+    router.push('/');
   };
   
   const handleTimeChange = (time: string | null) => {
@@ -647,7 +657,19 @@ export default function Component() {
       <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
         <LandmarkIcon className="w-full h-full text-[#8b7d6b]" />
       </div>
-      <Card className="w-full max-w-md bg-[#fffbf0]/90 backdrop-blur-sm shadow-lg border-[#d3c7a6]">
+      <header className="absolute top-0 left-0 w-full p-4 flex justify-between items-center bg-[#8b7d6b] text-white shadow-lg">
+        <h1 className="text-2xl font-bold">
+          MuseMate
+        </h1>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="bg-[#6a4f3b] text-white px-4 py-2 rounded-md hover:bg-[#4f382b]"
+        >
+          Logout
+        </button>
+      </header>
+      <Card className="w-full max-w-md bg-[#fffbf0]/90 backdrop-blur-sm shadow-lg border-[#d3c7a6] mt-16">
         <CardHeader className="bg-[#8b7d6b] text-white rounded-t-lg flex justify-between items-center">
           <CardTitle className="text-2xl font-bold text-center flex items-center justify-center">
             <LandmarkIcon className="mr-2 h-6 w-6" />
