@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Facebook, Mail, Sun, Moon } from 'lucide-react'
 import { useAuth0 } from '@auth0/auth0-react'
-import { ThemeProvider, useTheme } from './ThemeProvider'
+import { ThemeProvider, useTheme } from '../components/ThemeProvider'
 import '../app/globals.css'
 
 const changingWords = ["Time", "Culture", "History", "Creativity"]
