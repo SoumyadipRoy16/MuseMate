@@ -138,6 +138,7 @@ const languages = {
         }
     },
 };
+
 type Message = {
     text: string;
     sender: 'user' | 'bot';
@@ -193,6 +194,12 @@ export default function Component() {
     const [qrCodeData, setQrCodeData] = useState<string | null>(null);
     const [paymentSuccess, setPaymentSuccess] = useState<string | null>(null);
     const [paymentError, setPaymentError] = useState<string | null>(null);
+
+    const prompts = {
+      English: ["Opening hours?", "Exhibitions", "Admission Fees?"],
+      Hindi: ["खुलने का समय?", "प्रदर्शनियाँ", "प्रवेश शुल्क?"],
+      Bengali: ["খোলার সময়?", "প্রদর্শনী", "ভর্তি ফি?"]
+    };
     
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -275,6 +282,50 @@ export default function Component() {
         }
     };
 
+    const handlePromptClick = (prompt: string) => {
+      // Set the input to the clicked prompt
+      setInput(prompt); 
+      // Immediately add the prompt to the messages and send it
+      setMessages(prevMessages => [...prevMessages, { text: prompt, sender: 'user' }]);
+      // Optionally, trigger the sending action here if needed
+      sendMessage(prompt); // Define this function to handle sending the message
+    };
+    
+    const sendMessage = (message: string) => {
+      // Example function to simulate sending a message
+      // This could be an API call or some other logic to handle sending the message
+      // If using an API, you would call it here
+      console.log("Message sent:", message);
+      // Optionally, scroll to bottom if needed
+      scrollToBottom();
+    };
+    
+    // Function to scroll to the bottom of the chat
+    const scrollToBottom = () => {
+      const chatContainer = document.getElementById('chat-container');
+      if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+    };
+    
+    // Function to display the prompts
+    const displayPrompts = () => {
+      const currentPrompts = prompts[selectedLanguage] || prompts['English'];
+    
+      return (
+        <div className="prompt-container flex justify-center items-center">
+          {currentPrompts.map((prompt, index) => (
+            <Button
+              key={index}
+              onClick={() => handlePromptClick(prompt)}
+              className="bg-[#e8e0cc] text-[#5c4f3d] rounded-lg p-2 text-sm transition-transform transform hover:-translate-y-1 hover:bg-[#d3c7a6] hover:shadow-md focus:ring-2 focus:ring-[#8b7d6b] mx-2"
+            >
+              {prompt}
+            </Button>
+          ))}
+        </div>
+      );
+    };
     // Handle language change
     const handleLanguageChange = (language: string) => {
         setSelectedLanguage(language as 'English' | 'Hindi' | 'Bengali');
@@ -826,7 +877,18 @@ export default function Component() {
         )}
         </ScrollArea>
 
-
+        {/* Suggestion Prompts */}
+        <div className="mt-4 flex justify-center space-x-4">
+          {prompts[selectedLanguage].map((prompt) => (
+            <Button
+              key={prompt}
+              className="bg-[#e8e0cc] text-[#5c4f3d] rounded-lg p-2 text-sm transition-transform transform hover:-translate-y-1 hover:bg-[#d3c7a6] hover:shadow-md focus:ring-2 focus:ring-[#8b7d6b]"
+              onClick={() => handlePromptClick(prompt)}
+            >
+              {prompt}
+            </Button>
+          ))}
+        </div>
         </CardContent>
         <CardFooter>
           <div className="flex items-center">
