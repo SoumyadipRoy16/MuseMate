@@ -1,23 +1,40 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Facebook, Mail } from 'lucide-react'
+import { Facebook, Mail, Sun, Moon } from 'lucide-react'
 import { useAuth0 } from '@auth0/auth0-react'
+import { ThemeProvider, useTheme } from './ThemeProvider'
 import '../app/globals.css'
 
 const changingWords = ["Time", "Culture", "History", "Creativity"]
 
-export default function EnhancedLandingPage() {
+function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme()
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTheme}
+      className="w-10 h-10 rounded-full"
+    >
+      {theme === 'light' ? <Moon className="h-[1.2rem] w-[1.2rem]" /> : <Sun className="h-[1.2rem] w-[1.2rem]" />}
+    </Button>
+  )
+}
+
+function EnhancedLandingPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isLoginView, setIsLoginView] = useState(true)
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
   const { loginWithRedirect, isAuthenticated, logout, user } = useAuth0()
+  const { theme } = useTheme()
 
   // Form state
   const [formData, setFormData] = useState({
@@ -71,7 +88,7 @@ export default function EnhancedLandingPage() {
   const handleSocialLogin = (provider: string) => {
     loginWithRedirect({
       appState: {
-        returnTo: '/chatbot' // Redirect to /chatbot after successful login
+        returnTo: '/chatbot' // The URL to redirect to after login
       }
     });
   };
@@ -198,30 +215,31 @@ export default function EnhancedLandingPage() {
   }, [])
 
   return (
-    <div className="relative min-h-screen text-amber-900 overflow-hidden">
+    <div className={`relative min-h-screen overflow-hidden ${theme === 'light' ? 'text-amber-900' : 'text-amber-100'}`}>
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
       />
-      <div className="absolute inset-0 bg-white opacity-10" />
+      <div className={`absolute inset-0 ${theme === 'light' ? 'bg-white opacity-10' : 'bg-black opacity-50'}`} />
       <div className="relative z-10">
         <header className="p-6 flex justify-between items-center">
           <h1 className="text-4xl font-bold tracking-tight">MuseMate</h1>
-          <nav>
+          <nav className="flex items-center space-x-6">
             <ul className="flex space-x-6">
               <li>
                 <a href="#quiz" className="text-lg font-semibold relative group">
                   Quiz
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all group-hover:w-full"></span>
+                  <span className={`absolute -bottom-1 left-0 w-0 h-0.5 ${theme === 'light' ? 'bg-amber-600' : 'bg-amber-400'} transition-all group-hover:w-full`}></span>
                 </a>
               </li>
               <li>
                 <a href="#gallery" className="text-lg font-semibold relative group">
                   Gallery
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-amber-600 transition-all group-hover:w-full"></span>
+                  <span className={`absolute -bottom-1 left-0 w-0 h-0.5 ${theme === 'light' ? 'bg-amber-600' : 'bg-amber-400'} transition-all group-hover:w-full`}></span>
                 </a>
               </li>
             </ul>
+            <ThemeToggle />
           </nav>
         </header>
         <main className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] text-center px-4">
@@ -280,22 +298,24 @@ export default function EnhancedLandingPage() {
                   <span className="absolute -bottom-2 -right-2 w-4 h-4 border-b-4 border-r-4 border-amber-600 rounded-br-full" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px] bg-white p-6 shadow-lg rounded-md">
+              <DialogContent className={`sm:max-w-[425px] p-6 shadow-lg rounded-md ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-gray-100'}`}>
                 <div className="flex flex-col space-y-4">
                   <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold">{isLoginView ? 'Login' : 'Sign Up'}</h3>
                     <div className="flex items-center space-x-2">
-                      <Label htmlFor="auth-toggle">
+                      <Label htmlFor="auth-toggle" className={theme === 'light' ? 'text-gray-700' : 'text-gray-300'}>
                         {isLoginView ? 'Need an account?' : 'Already have an account?'}
                       </Label>
                       <Switch
                         id="auth-toggle"
                         checked={!isLoginView}
                         onCheckedChange={() => setIsLoginView(!isLoginView)}
-                        className="relative inline-flex items-center h-6 rounded-full w-11 bg-gray-200"
+                        className="relative inline-flex items-center h-6 rounded-full w-11 bg-gray-200 dark:bg-gray-700"
                       >
                         <span
-                          className={`${!isLoginView ? 'translate-x-6' : 'translate-x-1'} inline-block w-4 h-4 transform bg-black rounded-full transition-transform`}
+                          className={`${
+                            !isLoginView ? 'translate-x-6' : 'translate-x-1'
+                          } inline-block w-4 h-4 transform bg-white dark:bg-gray-200 rounded-full transition-transform`}
                         />
                       </Switch>
                     </div>
@@ -311,15 +331,33 @@ export default function EnhancedLandingPage() {
                       >
                         <form onSubmit={handleSubmit} className="space-y-4">
                           <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="Enter your email" required />
+                            <Label htmlFor="email" className={theme === 'light' ? 'text-gray-700' : 'text-gray-300'}>Email</Label>
+                            <Input 
+                              id="email" 
+                              type="email" 
+                              value={formData.email} 
+                              onChange={handleInputChange} 
+                              placeholder="Enter your email" 
+                              required 
+                              className={theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-700 text-gray-100'}
+                            />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
-                            <Input id="password" type="password" value={formData.password} onChange={handleInputChange} placeholder="Enter your password" required />
+                            <Label htmlFor="password" className={theme === 'light' ? 'text-gray-700' : 'text-gray-300'}>Password</Label>
+                            <Input 
+                              id="password" 
+                              type="password" 
+                              value={formData.password} 
+                              onChange={handleInputChange} 
+                              placeholder="Enter your password" 
+                              required 
+                              className={theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-700 text-gray-100'}
+                            />
                           </div>
                           {formError && <p className="text-red-500">{formError}</p>}
-                          <Button type="submit" className="w-full bg-black text-white">Login</Button>
+                          <Button type="submit" className={`w-full ${theme === 'light' ? 'bg-black text-white hover:bg-gray-800' : 'bg-white text-black hover:bg-gray-200'}`}>
+                            Login
+                          </Button>
                         </form>
                       </motion.div>
                     ) : (
@@ -332,19 +370,45 @@ export default function EnhancedLandingPage() {
                       >
                         <form onSubmit={handleSubmit} className="space-y-4">
                           <div className="space-y-2">
-                            <Label htmlFor="name">Name</Label>
-                            <Input id="name" type="text" value={formData.name} onChange={handleInputChange} placeholder="Enter your name" required />
+                            <Label htmlFor="name" className={theme === 'light' ? 'text-gray-700' : 'text-gray-300'}>Name</Label>
+                            <Input 
+                              id="name" 
+                              type="text" 
+                              value={formData.name} 
+                              onChange={handleInputChange} 
+                              placeholder="Enter your name" 
+                              required 
+                              className={theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-700 text-gray-100'}
+                            />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="Enter your email" required />
+                            <Label htmlFor="email" className={theme === 'light' ? 'text-gray-700' : 'text-gray-300'}>Email</Label>
+                            <Input 
+                              id="email" 
+                              type="email" 
+                              value={formData.email} 
+                              onChange={handleInputChange} 
+                              placeholder="Enter your email" 
+                              required 
+                              className={theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-700 text-gray-100'}
+                            />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
-                            <Input id="password" type="password" value={formData.password} onChange={handleInputChange} placeholder="Create a password" required />
+                            <Label htmlFor="password" className={theme === 'light' ? 'text-gray-700' : 'text-gray-300'}>Password</Label>
+                            <Input 
+                              id="password" 
+                              type="password" 
+                              value={formData.password} 
+                              onChange={handleInputChange} 
+                              placeholder="Create a password" 
+                              required 
+                              className={theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-700 text-gray-100'}
+                            />
                           </div>
                           {formError && <p className="text-red-500">{formError}</p>}
-                          <Button type="submit" className="w-full bg-black text-white">Sign Up</Button>
+                          <Button type="submit" className={`w-full ${theme === 'light' ? 'bg-black text-white hover:bg-gray-800' : 'bg-white text-black hover:bg-gray-200'}`}>
+                            Sign Up
+                          </Button>
                         </form>
                       </motion.div>
                     )}
@@ -352,7 +416,11 @@ export default function EnhancedLandingPage() {
                   <div className="space-y-2">
                     <Button
                       onClick={() => handleSocialLogin('google-oauth2')}
-                      className="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                      className={`w-full ${
+                        theme === 'light'
+                          ? 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                          : 'bg-gray-700 text-white border border-gray-600 hover:bg-gray-600'
+                      }`}
                     >
                       <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                         <path
@@ -375,10 +443,18 @@ export default function EnhancedLandingPage() {
             </Dialog>
           </motion.div>
         </main>
-        <footer className="p-6 bg-amber-800 text-amber-100 text-center">
+        <footer className={`p-6 ${theme === 'light' ? 'bg-amber-800 text-amber-100' : 'bg-amber-900 text-amber-200'} text-center`}>
           <p>&copy; {new Date().getFullYear()} MuseMate. All rights reserved.</p>
         </footer>
       </div>
     </div>
+  )
+}
+
+export default function WrappedEnhancedLandingPage() {
+  return (
+    <ThemeProvider>
+      <EnhancedLandingPage />
+    </ThemeProvider>
   )
 }
