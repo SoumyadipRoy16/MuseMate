@@ -12,7 +12,26 @@ import { useAuth0 } from '@auth0/auth0-react'
 import { ThemeProvider, useTheme } from '../components/ThemeProvider'
 import '../app/globals.css'
 
-const changingWords = ["Time", "Culture", "History", "Creativity"]
+const languages = {
+  en: {
+    heading: "Journey Through",
+    subheading: "Discover masterpieces, unravel history, and immerse yourself in culture. Your adventure begins with a click.",
+    changingWords: ["Time", "Culture", "History", "Creativity"],
+    andArt: "and Art"
+  },
+  hi: {
+    heading: "यात्रा करें",
+    subheading: "कलाकृतियों की खोज करें, इतिहास को समझें, और संस्कृति में डूबें। आपकी यात्रा एक क्लिक से शुरू होती है।",
+    changingWords: ["समय", "संस्कृति", "इतिहास", "रचनात्मकता"],
+    andArt: "और कला"
+  },
+  es: {
+    heading: "জার্নি থ্রু",
+    subheading: "মাস্টারপিসগুলি আবিষ্কার করুন, ইতিহাস উন্মোচন করুন এবং সংস্কৃতিতে নিজেকে নিমজ্জিত করুন। আপনার দু: সাহসিক কাজ একটি ক্লিক দিয়ে শুরু।",
+    changingWords: ["সময়", "সংস্কৃতি", "ইতিহাস", "সৃজনশীলতা"],
+    andArt: "এবং শিল্প"
+  }
+}
 
 function ThemeToggle() {
   const { theme, toggleTheme } = useTheme()
@@ -33,6 +52,7 @@ function EnhancedLandingPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isLoginView, setIsLoginView] = useState(true)
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
+  const [currentLanguage, setCurrentLanguage] = useState('en')
   const { loginWithRedirect, isAuthenticated, logout, user } = useAuth0()
   const { theme } = useTheme()
 
@@ -95,10 +115,22 @@ function EnhancedLandingPage() {
   
   useEffect(() => {
     const wordInterval = setInterval(() => {
-      setCurrentWordIndex((prevIndex) => (prevIndex + 1) % changingWords.length)
+      setCurrentWordIndex((prevIndex) => (prevIndex + 1) % languages[currentLanguage as keyof typeof languages].changingWords.length)
     }, 3000)
 
     return () => clearInterval(wordInterval)
+  }, [currentLanguage])
+
+  useEffect(() => {
+    const languageInterval = setInterval(() => {
+      setCurrentLanguage((prevLang) => {
+        const langs = Object.keys(languages)
+        const currentIndex = langs.indexOf(prevLang)
+        return langs[(currentIndex + 1) % langs.length]
+      })
+    }, 5000)
+
+    return () => clearInterval(languageInterval)
   }, [])
 
   useEffect(() => {
@@ -244,33 +276,35 @@ function EnhancedLandingPage() {
         </header>
         <main className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] text-center px-4">
           <motion.h2
+            key={currentLanguage}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             className="text-5xl sm:text-6xl md:text-7xl font-extrabold mb-8 leading-tight"
           >
-            Journey Through{' '}
+            {languages[currentLanguage as keyof typeof languages].heading}{' '}
             <AnimatePresence mode="wait">
               <motion.span
-                key={currentWordIndex}
+                key={`${currentLanguage}-${currentWordIndex}`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
                 className="inline-block text-amber-600 animate-pulse"
               >
-                {changingWords[currentWordIndex]}
+                {languages[currentLanguage as keyof typeof languages].changingWords[currentWordIndex]}
               </motion.span>
             </AnimatePresence>
-            {' '}and Art
+            {' '}{languages[currentLanguage as keyof typeof languages].andArt}
           </motion.h2>
           <motion.p
+            key={`subheading-${currentLanguage}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-xl sm:text-2xl mb-12 max-w-2xl"
           >
-            Discover masterpieces, unravel history, and immerse yourself in culture. Your adventure begins with a click.
+            {languages[currentLanguage as keyof typeof languages].subheading}
           </motion.p>
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
